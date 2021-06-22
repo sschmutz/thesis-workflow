@@ -1,0 +1,3 @@
+.DS_Store
+sequencing_files
+.snakemake/
