@@ -1,3 +1,4 @@
 .DS_Store
-sequencing_files
+sequencing_files/
 .snakemake/
+quality_measures/
