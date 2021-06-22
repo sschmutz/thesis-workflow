@@ -2,3 +2,6 @@
 sequencing_files/
 .snakemake/
 quality_measures/
+classification/
+virmet_dbs/
+virmet_output/
