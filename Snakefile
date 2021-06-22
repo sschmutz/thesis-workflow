@@ -24,3 +24,17 @@ rule get_classified_sequences:
         # get only classified sequences (difference between filtered and undetermined)
         shell("comm -23 sequencing_files/{wildcards.sample}_good.lst sequencing_files/{wildcards.sample}_unclassified.lst > {output.good_classified_reads_list}")
         shell("seqkit grep -n -f sequencing_files/{wildcards.sample}_good-classified.lst sequencing_files/{wildcards.sample}_good.fastq | gzip > {output.classified_reads}")
+
+
+rule get_quality_measures:
+    input:
+        unclassified_reads="sequencing_files/{sample}_unclassified-reads.fastq.gz",
+        classified_reads="sequencing_files/{sample}_classified-reads.fastq.gz"
+    output:
+        unclassified_reads_quality="quality_measures/{sample}_unclassified-reads.json",
+        unclassified_reads_quality_report="quality_measures/{sample}_unclassified-reads.html",
+        classified_reads_quality="quality_measures/{sample}_classified-reads.json",
+        classified_reads_quality_report="quality_measures/{sample}_classified-reads.html",
+    run:
+        shell("fastp -i {input.unclassified_reads} --overrepresentation_analysis --low_complexity_filter -j {output.unclassified_reads_quality} -h {output.unclassified_reads_quality_report}")
+        shell("fastp -i {input.classified_reads} --overrepresentation_analysis --low_complexity_filter -j {output.classified_reads_quality} -h {output.classified_reads_quality_report}")
