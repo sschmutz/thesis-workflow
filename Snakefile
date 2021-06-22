@@ -96,3 +96,18 @@ rule get_sequence_labels:
 
         # get viral sequence ids
         shell('zgrep "@M0" {input.fastq_viral} | sed "s/@//" > {output.list_viral}')
+
+
+rule metagenome_assembly:
+    input:
+        classified_reads="sequencing_files/{sample}_classified-reads.fastq.gz",
+        unclassified_reads="sequencing_files/{sample}_unclassified-reads.fastq.gz"
+    output:
+        "metagenome_assembly/{sample}/",
+        assembly_fasta="metagenome_assembly/{sample}/final.contigs.fa",
+        assembly_fastg="metagenome_assembly/{sample}/final.contigs.fastg",
+        assembly_list="metagenome_assembly/{sample}/final.contigs.lst"
+    run:
+        shell("megahit -r {input.classified_reads},{input.unclassified_reads} -m 0.5 -t 4 -o metagenome_assembly/{wildcards.sample}")
+        shell("megahit_core contig2fastg 141 {output.assembly_fasta} > {output.assembly_fastg}")
+        shell('grep ">" {output.assembly_fasta} | sed "s/>//" > {output.assembly_list}')

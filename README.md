@@ -15,7 +15,7 @@ The workflow is divided in different steps, also called rules in Snakemake.
 
 To visualise the rules, a directed acyclic graph (DAG) can be written with the following command:
 
-`snakemake --rulegraph classification/1000580287-AR-RNA_human.lst | dot -Tsvg > dag.svg`
+`snakemake --rulegraph metagenome_assembly/1000580287-AR-RNA quality_measures/1000580287-AR-RNA_classified-reads.json classification/1000580287-AR-RNA_viral.lst | dot -Tsvg > dag.svg`
 
 ![DAG of all rules](dag.svg)
 
@@ -36,8 +36,11 @@ For the semisupervised approach, the labels of all reads are required. With the 
 To access the information of which read was mapped against a read of which reference database, one needs to uncompress the CRAM files. This can be done using cramtools. It requires the CRAM files itself and the reference database (fasta file) which was used for the alignment. All mapped reads can then be written to a fastq file and by extracting just the sequence ids, one gets a list of all reads which were aligned to a sequence of each of the classes.  
 It is a bit more straight forward for the viral reads, because those are saved in a `viral_reads.fastq.gz`. Only the second part of what is described in the previous section, extracting the sequence ids, needs to be done for those.
 
+### Metagenome assembly
+All reads per sample which passed the VirMet quality filtering steps are used for a metagenome assembly using megahit.
+
 ## Usage example
 There are different ways to execute parts or the whole snakemake workflow (see [Snakemake documentation](https://snakemake.readthedocs.io/en/stable/)).  
 Described here is an example to run the full workflow of one sample.
 
-`snakemake --cores 8 classification/1000580287-AR-RNA_human.lst`
+`snakemake --cores 8 metagenome_assembly/1000580287-AR-RNA quality_measures/1000580287-AR-RNA_classified-reads.json classification/1000580287-AR-RNA_viral.lst`
