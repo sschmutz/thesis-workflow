@@ -87,7 +87,7 @@ rule metagenome_assembly:
         classified_reads="data/sequencing_files/{sample}_classified-reads.fastq.gz",
         unclassified_reads="data/sequencing_files/{sample}_unclassified-reads.fastq.gz"
     output:
-        assembly_folder=temp(directory("data/metagenome_assembly/{sample}")),
+        assembly_folder=temp(directory("data/metagenome_assembly/{sample}"))
     shell:
         "megahit -r {input.classified_reads},{input.unclassified_reads} -m 0.5 -t 4 -o {output.assembly_folder}"
 
@@ -96,8 +96,10 @@ rule remove_intermediate_contigs:
     input:
         assembly_folder="data/metagenome_assembly/{sample}"
     output:
+        assembly_stats=temp("data/metagenome_assembly/{sample}_final.contigs.lst"),
         assembly="data/metagenome_assembly/{sample}_final.contigs.fasta.gz"
     run:
+        shell('grep ">" data/metagenome_assembly/{wildcards.sample}/final.contigs.fa | sed "s/>//" > data/metagenome_assembly/{wildcards.sample}_final.contigs.lst')
         shell("cp data/metagenome_assembly/{wildcards.sample}/final.contigs.fa data/metagenome_assembly/{wildcards.sample}_final.contigs.fasta")
         shell("gzip data/metagenome_assembly/{wildcards.sample}_final.contigs.fasta")
 

@@ -48,8 +48,9 @@ All reads per sample which passed the VirMet quality filtering steps are used fo
 
 `snakemake --cores 8 data/metagenome_assembly/1000580287-AR-RNA`
 
+
 ### Remove intermediate contigs
-From the metagenome assembly, only the minimum which is needed to proceed (final.contigs) are kept and compressed to optimize space required. If the intermediate contigs should be kept, remove the `temp()` tag of the metagenome assembly output.
+From the metagenome assembly, only the minimum which is needed to proceed (final.contigs and the assembly stats which are the sequencing headers) are kept and compressed to optimize space required. If the intermediate contigs should be kept, remove the `temp()` tag of the metagenome assembly output.
 
 `snakemake --cores 8 data/metagenome_assembly/1000580287-AR-RNA_final.contigs.fasta.gz`
 
