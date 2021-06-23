@@ -25,7 +25,7 @@ read_virmet_classes <- function(sample_name_short, virmet_class){
   # this function reads VirMet classification infos (read ids) of one sample and class
   # enables to use map in the next function to do this for all classes of one sample
   
-  class_label_path <- here("classification", paste0(sample_name_short, "_", virmet_class, ".lst.gz"))
+  class_label_path <- here("data", "classification", paste0(sample_name_short, "_", virmet_class, ".lst.gz"))
   
   # only returns first part of class label ("bacterial_1" gives "bacterial")
   virmet_class_short <- str_split(virmet_class, pattern = "_")[[1]][1]
@@ -40,7 +40,7 @@ read_virmet_classes <- function(sample_name_short, virmet_class){
 
 write_undetermined_class_label <- function(sample_name_short, threshold){
   
-  alignment_path <- here("metagenome_assembly_read_mapping", paste0(sample_name_short, "_aln.tsv.gz"))
+  alignment_path <- here("data", "metagenome_assembly_read_mapping", paste0(sample_name_short, "_aln.tsv.gz"))
   
   # caution, some reads might have mapped to more than one contig and are listed multiple times
   alignment <-
@@ -126,9 +126,9 @@ write_undetermined_class_label <- function(sample_name_short, threshold){
     arrange(class)
 
   
-  write_csv(n_summary, file = here("undetermined_class_label", paste0(sample_name_short, "_", threshold, ".csv")))
-  write(unclassified_in_contig_list, file = here("classification", paste0(sample_name_short, "_", threshold, "_unclassified_in_contig.lst")))
-  write(unclassified_not_in_contig_list, file = here("classification", paste0(sample_name_short, "_", threshold, "_unclassified_not_in_contig.lst")))
+  write_csv(n_summary, file = here("data", "undetermined_class_label", paste0(sample_name_short, "_", threshold, ".csv")))
+  write(unclassified_in_contig_list, file = here("data", "classification", paste0(sample_name_short, "_unclassified-in-contig_", threshold, ".lst")))
+  write(unclassified_not_in_contig_list, file = here("data", "classification", paste0(sample_name_short, "_unclassified-not-in-contig_", threshold, ".lst")))
   
 }
 
@@ -137,8 +137,8 @@ write_undetermined_class_label <- function(sample_name_short, threshold){
 
 list_human <- snakemake@input[["list_human"]]
 
-# extract the sample name by looking at everything which is inbetween "/" and "_"
-sample_name_short <- str_extract(list_human, pattern = "(?<=/)(.*)(?=_)")
+# extract the sample name by looking at everything which is inbetween "data/classification/" and "_human.lst.gz"
+sample_name_short <- str_extract(list_human, pattern = "(?<=data/classification/)(.*)(?=_human.lst.gz)")
 
 threshold <- as.numeric(snakemake@params[["threshold"]])
 
