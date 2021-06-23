@@ -32,9 +32,9 @@ rule get_quality_measures:
         classified_reads="sequencing_files/{sample}_classified-reads.fastq.gz"
     output:
         unclassified_reads_quality="quality_measures/{sample}_unclassified-reads.json",
-        unclassified_reads_quality_report="quality_measures/{sample}_unclassified-reads.html",
+        unclassified_reads_quality_report=temp("quality_measures/{sample}_unclassified-reads.html"),
         classified_reads_quality="quality_measures/{sample}_classified-reads.json",
-        classified_reads_quality_report="quality_measures/{sample}_classified-reads.html",
+        classified_reads_quality_report=temp("quality_measures/{sample}_classified-reads.html")
     run:
         shell("fastp -i {input.unclassified_reads} --overrepresentation_analysis --low_complexity_filter -j {output.unclassified_reads_quality} -h {output.unclassified_reads_quality_report}")
         shell("fastp -i {input.classified_reads} --overrepresentation_analysis --low_complexity_filter -j {output.classified_reads_quality} -h {output.classified_reads_quality_report}")
@@ -103,11 +103,17 @@ rule metagenome_assembly:
         classified_reads="sequencing_files/{sample}_classified-reads.fastq.gz",
         unclassified_reads="sequencing_files/{sample}_unclassified-reads.fastq.gz"
     output:
-        "metagenome_assembly/{sample}/",
-        assembly_fasta="metagenome_assembly/{sample}/final.contigs.fa",
-        assembly_fastg="metagenome_assembly/{sample}/final.contigs.fastg",
-        assembly_list="metagenome_assembly/{sample}/final.contigs.lst"
+        assembly_folder=directory("metagenome_assembly/{sample}")
     run:
-        shell("megahit -r {input.classified_reads},{input.unclassified_reads} -m 0.5 -t 4 -o metagenome_assembly/{wildcards.sample}")
-        shell("megahit_core contig2fastg 141 {output.assembly_fasta} > {output.assembly_fastg}")
-        shell('grep ">" {output.assembly_fasta} | sed "s/>//" > {output.assembly_list}')
+        shell("megahit -r {input.classified_reads},{input.unclassified_reads} -m 0.5 -t 4 -o {output.assembly_folder}")
+
+
+rule read_mapping:
+    input:
+        unclassified_reads="sequencing_files/{sample}_unclassified-reads.fastq.gz",
+        classified_reads="sequencing_files/{sample}_classified-reads.fastq.gz",
+        assembly_fasta="metagenome_assembly/{sample}/final.contigs.fa"
+    output:
+        "metagenome_assembly_read_mapping/{sample}_aln.tsv.gz"
+    shell:
+        "minimap2 -ax sr {input.assembly_fasta} <(cat {input.unclassified_reads} {input.classified_reads}) | samtools view | cut -f 1,3 | gzip > {output}"

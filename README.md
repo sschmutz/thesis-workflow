@@ -39,8 +39,11 @@ It is a bit more straight forward for the viral reads, because those are saved i
 ### Metagenome assembly
 All reads per sample which passed the VirMet quality filtering steps are used for a metagenome assembly using megahit.
 
+### Read mapping
+To get the information of which read is part of which contig, the sequencing reads have to be mapped back to those contigs.
+
 ## Usage example
 There are different ways to execute parts or the whole snakemake workflow (see [Snakemake documentation](https://snakemake.readthedocs.io/en/stable/)).  
 Described here is an example to run the full workflow of one sample.
 
-`snakemake --cores 8 metagenome_assembly/1000580287-AR-RNA quality_measures/1000580287-AR-RNA_classified-reads.json classification/1000580287-AR-RNA_viral.lst`
+`snakemake --cores 8 metagenome_assembly_read_mapping/{1000576042-AR-DNA,1000576042-AR-RNA,1000580287-AR-DNA,1000580287-AR-RNA}_aln.tsv.gz`
