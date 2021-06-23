@@ -8,6 +8,9 @@
 # a contig have to be labeled by VirMet) -> calculate fractions, remove unclassified
 # and pick the label with the highest fraction
 
+# outputs are:
+
+
 library(readr)
 library(tidyr)
 library(dplyr)
@@ -16,7 +19,12 @@ library(purrr)
 library(here)
 
 
+# function definitions ----------------------------------------------------
+
 read_virmet_classes <- function(sample_name_short, virmet_class){
+  # this function reads VirMet classification infos (read ids) of one sample and class
+  # enables to use map in the next function to do this for all classes of one sample
+  
   class_label_path <- here("classification", paste0(sample_name_short, "_", virmet_class, ".lst.gz"))
   
   # only returns first part of class label ("bacterial_1" gives "bacterial")
@@ -29,7 +37,8 @@ read_virmet_classes <- function(sample_name_short, virmet_class){
   return(virmet_class_labels)
 }
 
-label_contigs <- function(sample_name_short, threshold){
+
+write_undetermined_class_label <- function(sample_name_short, threshold){
   
   alignment_path <- here("metagenome_assembly_read_mapping", paste0(sample_name_short, "_aln.tsv.gz"))
   
@@ -75,15 +84,29 @@ label_contigs <- function(sample_name_short, threshold){
     slice_max(order_by = n_fraction, n = 1, with_ties = FALSE) %>%
     ungroup()
   
+  
   unclassified_in_contig <-
     alignment_undetermined_reads %>%
     filter(!is.na(contig_number)) %>%
     left_join(contig_labels, by = "contig_number")
   
+  unclassified_in_contig_list <-
+    alignment_undetermined_reads %>%
+    filter(!is.na(contig_number)) %>%
+    pull(read_name) %>%
+    unique()
+  
+  
   n_unclassified_not_in_contig <-
     alignment_undetermined_reads %>%
     filter(is.na(contig_number)) %>%
     nrow()
+  
+  unclassified_not_in_contig_list <-
+    alignment_undetermined_reads %>%
+    filter(is.na(contig_number)) %>%
+    pull(read_name) %>%
+    unique()
   
   classes <- tibble(class = c("human", "bacterial", "fungal", "viral", "unclassified_in_contig", "unclassified_not_in_contig"))
     
@@ -103,17 +126,14 @@ label_contigs <- function(sample_name_short, threshold){
     arrange(class)
 
   
-  return(n_summary)
+  write_csv(n_summary, file = here("undetermined_class_label", paste0(sample_name_short, "_", threshold, ".csv")))
+  write(unclassified_in_contig_list, file = here("classification", paste0(sample_name_short, "_", threshold, "_unclassified_in_contig.lst")))
+  write(unclassified_not_in_contig_list, file = here("classification", paste0(sample_name_short, "_", threshold, "_unclassified_not_in_contig.lst")))
+  
 }
 
-write_undetermined_class_label <- function(sample_name_short, threshold){
-  
-  output_path <- here("undetermined_class_label", paste0(sample_name_short, "_", threshold, ".csv"))
-  
-  label_contigs(sample_name_short, threshold) %>%
-    write_csv(output_path)
-  
-}
+
+# call functions ----------------------------------------------------------
 
 list_human <- snakemake@input[["list_human"]]
 

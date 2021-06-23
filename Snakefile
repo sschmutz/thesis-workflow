@@ -126,6 +126,8 @@ rule label_contigs:
         # the threshold value is in percent
         threshold="{threshold}"
     output:
-        "undetermined_class_label/{sample}_{threshold}.csv"
+        "undetermined_class_label/{sample}_{threshold}.csv",
+        temp("classification/{sample}_{threshold}_unclassified_in_contig.lst"),
+        temp("classification/{sample}_{threshold}_unclassified_not_in_contig.lst")
     script:
         "scripts/label_contigs.R"

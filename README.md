@@ -46,7 +46,7 @@ From the metagenome assembly, only the minimum which is needed to proceed (final
 To get the information of which read is part of which contig, the sequencing reads have to be mapped back to those contigs.
 
 ### Label contigs
-Given a threshold value in percent, the previously unclassified reads are put into classes. The summary statistics are written to the `undetermined_class_label` folder.
+Given a threshold value in percent, the previously unclassified reads are put into classes. The summary statistics are written to the `undetermined_class_label` folder and a list of sequencing reads for the two classes "unclassified_in_contig" and "unclassified_not_in_contig" are written to the `classification` folder.
 
 ## Usage example
 There are different ways to execute parts or the whole snakemake workflow (see [Snakemake documentation](https://snakemake.readthedocs.io/en/stable/)).  
