@@ -32,12 +32,10 @@ rule get_quality_measures:
         classified_reads="sequencing_files/{sample}_classified-reads.fastq.gz"
     output:
         unclassified_reads_quality="quality_measures/{sample}_unclassified-reads.json",
-        unclassified_reads_quality_report=temp("quality_measures/{sample}_unclassified-reads.html"),
         classified_reads_quality="quality_measures/{sample}_classified-reads.json",
-        classified_reads_quality_report=temp("quality_measures/{sample}_classified-reads.html")
     run:
-        shell("fastp -i {input.unclassified_reads} --overrepresentation_analysis --low_complexity_filter -j {output.unclassified_reads_quality} -h {output.unclassified_reads_quality_report}")
-        shell("fastp -i {input.classified_reads} --overrepresentation_analysis --low_complexity_filter -j {output.classified_reads_quality} -h {output.classified_reads_quality_report}")
+        shell("fastp -i {input.unclassified_reads} --overrepresentation_analysis --low_complexity_filter -j {output.unclassified_reads_quality} -h /dev/null")
+        shell("fastp -i {input.classified_reads} --overrepresentation_analysis --low_complexity_filter -j {output.classified_reads_quality} -h /dev/null")
 
 
 rule get_sequence_labels:
@@ -58,19 +56,19 @@ rule get_sequence_labels:
         cram_fungal="virmet_output/{sample}/good_humanGRCh38_bact1_bact2_bact3_bact4_bact5_fungi1.cram",
         fastq_viral="virmet_output/{sample}/viral_reads.fastq.gz"
     output:
-        fastq_human=temp("classification/{sample}_human.fastq"),
+        fastq_human=temp("classification/{sample}_human.fastq.gz"),
         list_human="classification/{sample}_human.lst",
-        fastq_bacterial_1=temp("classification/{sample}_bacterial_1.fastq"),
+        fastq_bacterial_1=temp("classification/{sample}_bacterial_1.fastq.gz"),
         list_bacterial_1="classification/{sample}_bacterial_1.lst",
-        fastq_bacterial_2=temp("classification/{sample}_bacterial_2.fastq"),
+        fastq_bacterial_2=temp("classification/{sample}_bacterial_2.fastq.gz"),
         list_bacterial_2="classification/{sample}_bacterial_2.lst",
-        fastq_bacterial_3=temp("classification/{sample}_bacterial_3.fastq"),
+        fastq_bacterial_3=temp("classification/{sample}_bacterial_3.fastq.gz"),
         list_bacterial_3="classification/{sample}_bacterial_3.lst",
-        fastq_bacterial_4=temp("classification/{sample}_bacterial_4.fastq"),
+        fastq_bacterial_4=temp("classification/{sample}_bacterial_4.fastq.gz"),
         list_bacterial_4="classification/{sample}_bacterial_4.lst",
-        fastq_bacterial_5=temp("classification/{sample}_bacterial_5.fastq"),
+        fastq_bacterial_5=temp("classification/{sample}_bacterial_5.fastq.gz"),
         list_bacterial_5="classification/{sample}_bacterial_5.lst",
-        fastq_fungal=temp("classification/{sample}_fungal.fastq"),
+        fastq_fungal=temp("classification/{sample}_fungal.fastq.gz"),
         list_fungal="classification/{sample}_fungal.lst",
         list_viral="classification/{sample}_viral.lst"
     run:
