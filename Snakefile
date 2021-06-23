@@ -56,44 +56,30 @@ rule get_sequence_labels:
         cram_fungal="virmet_output/{sample}/good_humanGRCh38_bact1_bact2_bact3_bact4_bact5_fungi1.cram",
         fastq_viral="virmet_output/{sample}/viral_reads.fastq.gz"
     output:
-        fastq_human=temp("classification/{sample}_human.fastq.gz"),
-        list_human="classification/{sample}_human.lst",
-        fastq_bacterial_1=temp("classification/{sample}_bacterial_1.fastq.gz"),
-        list_bacterial_1="classification/{sample}_bacterial_1.lst",
-        fastq_bacterial_2=temp("classification/{sample}_bacterial_2.fastq.gz"),
-        list_bacterial_2="classification/{sample}_bacterial_2.lst",
-        fastq_bacterial_3=temp("classification/{sample}_bacterial_3.fastq.gz"),
-        list_bacterial_3="classification/{sample}_bacterial_3.lst",
-        fastq_bacterial_4=temp("classification/{sample}_bacterial_4.fastq.gz"),
-        list_bacterial_4="classification/{sample}_bacterial_4.lst",
-        fastq_bacterial_5=temp("classification/{sample}_bacterial_5.fastq.gz"),
-        list_bacterial_5="classification/{sample}_bacterial_5.lst",
-        fastq_fungal=temp("classification/{sample}_fungal.fastq.gz"),
-        list_fungal="classification/{sample}_fungal.lst",
-        list_viral="classification/{sample}_viral.lst"
+        list_human="classification/{sample}_human.lst.gz",
+        list_bacterial_1="classification/{sample}_bacterial_1.lst.gz",
+        list_bacterial_2="classification/{sample}_bacterial_2.lst.gz",
+        list_bacterial_3="classification/{sample}_bacterial_3.lst.gz",
+        list_bacterial_4="classification/{sample}_bacterial_4.lst.gz",
+        list_bacterial_5="classification/{sample}_bacterial_5.lst.gz",
+        list_fungal="classification/{sample}_fungal.lst.gz",
+        list_viral="classification/{sample}_viral.lst.gz"
     run:
         # get human sequence ids
-        shell("samtools fastq --reference {input.reference_human} {input.cram_human} | gzip > {output.fastq_human}")
-        shell('zgrep "@M0" {output.fastq_human} | sed "s/@//" > {output.list_human}')
+        shell('samtools fastq --reference {input.reference_human} {input.cram_human} | grep "@M0" | sed "s/@//" | gzip > {output.list_human}')
 
         # get bacterial sequence ids
-        shell("samtools fastq --reference {input.reference_bacterial_1} {input.cram_bacterial_1} | gzip > {output.fastq_bacterial_1}")
-        shell('zgrep "@M0" {output.fastq_bacterial_1} | sed "s/@//" > {output.list_bacterial_1}')
-        shell("samtools fastq --reference {input.reference_bacterial_2} {input.cram_bacterial_2} | gzip > {output.fastq_bacterial_2}")
-        shell('zgrep "@M0" {output.fastq_bacterial_2} | sed "s/@//" > {output.list_bacterial_2}')
-        shell("samtools fastq --reference {input.reference_bacterial_3} {input.cram_bacterial_3} | gzip > {output.fastq_bacterial_3}")
-        shell('zgrep "@M0" {output.fastq_bacterial_3} | sed "s/@//" > {output.list_bacterial_3}')
-        shell("samtools fastq --reference {input.reference_bacterial_4} {input.cram_bacterial_4} | gzip > {output.fastq_bacterial_4}")
-        shell('zgrep "@M0" {output.fastq_bacterial_4} | sed "s/@//" > {output.list_bacterial_4}')
-        shell("samtools fastq --reference {input.reference_bacterial_5} {input.cram_bacterial_5} | gzip > {output.fastq_bacterial_5}")
-        shell('zgrep "@M0" {output.fastq_bacterial_5} | sed "s/@//" > {output.list_bacterial_5}')
+        shell('samtools fastq --reference {input.reference_bacterial_1} {input.cram_bacterial_1} | zgrep "@M0" | sed "s/@//" | gzip > {output.list_bacterial_1}')
+        shell('samtools fastq --reference {input.reference_bacterial_2} {input.cram_bacterial_2} | zgrep "@M0" | sed "s/@//" | gzip > {output.list_bacterial_2}')
+        shell('samtools fastq --reference {input.reference_bacterial_3} {input.cram_bacterial_3} | zgrep "@M0" | sed "s/@//" | gzip > {output.list_bacterial_3}')
+        shell('samtools fastq --reference {input.reference_bacterial_4} {input.cram_bacterial_4} | zgrep "@M0" | sed "s/@//" | gzip > {output.list_bacterial_4}')
+        shell('samtools fastq --reference {input.reference_bacterial_5} {input.cram_bacterial_5} | zgrep "@M0" | sed "s/@//" | gzip > {output.list_bacterial_5}')
 
         # get fungal sequence ids
-        shell("samtools fastq --reference {input.reference_fungal} {input.cram_fungal} | gzip > {output.fastq_fungal}")
-        shell('zgrep "@M0" {output.fastq_fungal} | sed "s/@//" > {output.list_fungal}')
+        shell('samtools fastq --reference {input.reference_fungal} {input.cram_fungal} | zgrep "@M0" | sed "s/@//" | gzip > {output.list_fungal}')
 
         # get viral sequence ids
-        shell('zgrep "@M0" {input.fastq_viral} | sed "s/@//" > {output.list_viral}')
+        shell('zgrep "@M0" {input.fastq_viral} | sed "s/@//" | gzip > {output.list_viral}')
 
 
 rule metagenome_assembly:
@@ -101,16 +87,26 @@ rule metagenome_assembly:
         classified_reads="sequencing_files/{sample}_classified-reads.fastq.gz",
         unclassified_reads="sequencing_files/{sample}_unclassified-reads.fastq.gz"
     output:
-        assembly_folder=directory("metagenome_assembly/{sample}")
+        assembly_folder=temp(directory("metagenome_assembly/{sample}")),
+    shell:
+        "megahit -r {input.classified_reads},{input.unclassified_reads} -m 0.5 -t 4 -o {output.assembly_folder}"
+
+
+rule remove_intermediate_contigs:
+    input:
+        assembly_folder="metagenome_assembly/{sample}"
+    output:
+        assembly="metagenome_assembly/{sample}_final.contigs.fasta.gz"
     run:
-        shell("megahit -r {input.classified_reads},{input.unclassified_reads} -m 0.5 -t 4 -o {output.assembly_folder}")
+        shell("cp metagenome_assembly/{wildcards.sample}/final.contigs.fa metagenome_assembly/{wildcards.sample}_final.contigs.fasta")
+        shell("gzip metagenome_assembly/{wildcards.sample}_final.contigs.fasta")
 
 
 rule read_mapping:
     input:
         unclassified_reads="sequencing_files/{sample}_unclassified-reads.fastq.gz",
         classified_reads="sequencing_files/{sample}_classified-reads.fastq.gz",
-        assembly_fasta="metagenome_assembly/{sample}/final.contigs.fa"
+        assembly_fasta="metagenome_assembly/{sample}_final.contigs.fasta.gz"
     output:
         "metagenome_assembly_read_mapping/{sample}_aln.tsv.gz"
     shell:
