@@ -39,8 +39,14 @@ It is a bit more straight forward for the viral reads, because those are saved i
 ### Metagenome assembly
 All reads per sample which passed the VirMet quality filtering steps are used for a metagenome assembly using megahit.
 
+### Remove intermediate contigs
+From the metagenome assembly, only the minimum which is needed to proceed (final.contigs) are kept and compressed to optimize space required. If the intermediate contigs should be kept, remove the `temp()` tag of the metagenome assembly output.
+
 ### Read mapping
 To get the information of which read is part of which contig, the sequencing reads have to be mapped back to those contigs.
+
+### Label contigs
+Given a threshold value in percent, the previously unclassified reads are put into classes. The summary statistics are written to the `undetermined_class_label` folder.
 
 ## Usage example
 There are different ways to execute parts or the whole snakemake workflow (see [Snakemake documentation](https://snakemake.readthedocs.io/en/stable/)).  

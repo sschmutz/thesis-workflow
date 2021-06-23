@@ -7,3 +7,5 @@ virmet_dbs/
 virmet_output/
 metagenome_assembly/
 metagenome_assembly_read_mapping/
+undetermined_class_label/
+.Rproj.user

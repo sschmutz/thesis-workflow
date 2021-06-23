@@ -111,3 +111,21 @@ rule read_mapping:
         "metagenome_assembly_read_mapping/{sample}_aln.tsv.gz"
     shell:
         "minimap2 -ax sr {input.assembly_fasta} <(cat {input.unclassified_reads} {input.classified_reads}) | samtools view | cut -f 1,3 | gzip > {output}"
+
+rule label_contigs:
+    input:
+        list_human="classification/{sample}_human.lst.gz",
+        list_bacterial_1="classification/{sample}_bacterial_1.lst.gz",
+        list_bacterial_2="classification/{sample}_bacterial_2.lst.gz",
+        list_bacterial_3="classification/{sample}_bacterial_3.lst.gz",
+        list_bacterial_4="classification/{sample}_bacterial_4.lst.gz",
+        list_bacterial_5="classification/{sample}_bacterial_5.lst.gz",
+        list_fungal="classification/{sample}_fungal.lst.gz",
+        list_viral="classification/{sample}_viral.lst.gz"
+    params:
+        # the threshold value is in percent
+        threshold="{threshold}"
+    output:
+        "undetermined_class_label/{sample}_{threshold}.csv"
+    script:
+        "scripts/label_contigs.R"
