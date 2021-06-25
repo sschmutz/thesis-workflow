@@ -15,7 +15,7 @@ The workflow is divided in different steps, also called rules in Snakemake.
 
 To visualise the rules, a directed acyclic graph (DAG) can be written with the following command:
 
-`snakemake --rulegraph metagenome_assembly/1000580287-AR-RNA quality_measures/1000580287-AR-RNA_classified-reads.json classification/1000580287-AR-RNA_viral.lst | dot -Tsvg > dag.svg`
+`snakemake --rulegraph | dot -Tsvg > dag.svg`
 
 ![DAG of all rules](dag.svg)
 

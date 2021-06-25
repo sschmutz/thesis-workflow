@@ -1,4 +1,18 @@
-rule get_classified_sequences:
+SAMPLES = ["1000576042-AR-DNA", "1000576042-AR-RNA", "1000580287-AR-DNA", "1000580287-AR-RNA"]
+THRESHOLD = 5
+
+# a pseudo-rule which lists all files that should be created
+rule all:
+    input:
+        unclassified_reads_quality=expand("data/quality_measures/{sample}_unclassified-reads.json", sample=SAMPLES),
+        classified_reads_quality=expand("data/quality_measures/{sample}_classified-reads.json", sample=SAMPLES),
+        unclassified_in_contig_reads_quality=expand("data/quality_measures/{sample}_unclassified-in-contig-reads_{threshold}.json", sample=SAMPLES, threshold=THRESHOLD),
+        unclassified_not_in_contig_reads_quality=expand("data/quality_measures/{sample}_unclassified-not-in-contig-reads_{threshold}.json", sample=SAMPLES, threshold=THRESHOLD),
+        undetermined_class_label=expand("data/undetermined_class_label/{sample}_{threshold}.csv", sample=SAMPLES, threshold=THRESHOLD),
+        assembly=expand("data/metagenome_assembly/{sample}_final.contigs.fasta.gz", sample=SAMPLES)
+
+
+rule get_quality_filtered_sequences:
     input:
         raw_reads="data/sequencing_files/{sample}.fastq.gz",
         unclassified_reads="data/sequencing_files/{sample}_unclassified-reads.fastq.gz"
@@ -92,14 +106,22 @@ rule metagenome_assembly:
         "megahit -r {input.classified_reads},{input.unclassified_reads} -m 0.5 -t 4 -o {output.assembly_folder}"
 
 
-rule remove_intermediate_contigs:
+rule combine_contig_data:
     input:
         assembly_folder="data/metagenome_assembly/{sample}"
     output:
-        assembly_stats=temp("data/metagenome_assembly/{sample}_final.contigs.lst"),
+        assembly_stats_sample="data/metagenome_assembly/{sample}_final.contigs.lst"
+    run:
+        shell('grep ">" data/metagenome_assembly/{wildcards.sample}/final.contigs.fa | sed "s/>//" > {output.assembly_stats_sample}')
+
+
+rule remove_intermediate_contigs:
+    input:
+        assembly_folder="data/metagenome_assembly/{sample}",
+        assembly_stats_sample="data/metagenome_assembly/{sample}_final.contigs.lst"
+    output:
         assembly="data/metagenome_assembly/{sample}_final.contigs.fasta.gz"
     run:
-        shell('grep ">" data/metagenome_assembly/{wildcards.sample}/final.contigs.fa | sed "s/>//" > data/metagenome_assembly/{wildcards.sample}_final.contigs.lst')
         shell("cp data/metagenome_assembly/{wildcards.sample}/final.contigs.fa data/metagenome_assembly/{wildcards.sample}_final.contigs.fasta")
         shell("gzip data/metagenome_assembly/{wildcards.sample}_final.contigs.fasta")
 
@@ -113,6 +135,7 @@ rule read_mapping:
         "data/metagenome_assembly_read_mapping/{sample}_aln.tsv.gz"
     shell:
         "minimap2 -ax sr {input.assembly_fasta} <(cat {input.unclassified_reads} {input.classified_reads}) | samtools view | cut -f 1,3 | gzip > {output}"
+
 
 rule label_contigs:
     input:
