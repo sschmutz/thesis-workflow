@@ -4,10 +4,10 @@ THRESHOLD = 5
 # a pseudo-rule which lists all files that should be created
 rule all:
     input:
-        unclassified_reads_quality=expand("data/quality_measures/{sample}_unclassified-reads_{threshold}.json", sample=SAMPLES, threshold=THRESHOLD),
-        classified_reads_quality=expand("data/quality_measures/{sample}_classified-reads_{threshold}.json", sample=SAMPLES, threshold=THRESHOLD),
-        unclassified_in_contig_reads_quality=expand("data/quality_measures/{sample}_unclassified-in-contig-reads_{threshold}.json", sample=SAMPLES, threshold=THRESHOLD),
-        unclassified_not_in_contig_reads_quality=expand("data/quality_measures/{sample}_unclassified-not-in-contig-reads_{threshold}.json", sample=SAMPLES, threshold=THRESHOLD),
+        unclassified_reads_quality=expand("data/quality_metrics/{sample}_unclassified-reads.json", sample=SAMPLES),
+        classified_reads_quality=expand("data/quality_metrics/{sample}_classified-reads.json", sample=SAMPLES),
+        unclassified_in_contig_reads_quality=expand("data/quality_metrics/{sample}_unclassified-in-contig-reads.json", sample=SAMPLES),
+        unclassified_not_in_contig_reads_quality=expand("data/quality_metrics/{sample}_unclassified-not-in-contig-reads.json", sample=SAMPLES),
         undetermined_class_label=expand("data/undetermined_class_label/{sample}_{threshold}.csv", sample=SAMPLES, threshold=THRESHOLD),
         assembly=expand("data/metagenome_assembly/{sample}_final.contigs.fasta.gz", sample=SAMPLES)
 
@@ -45,19 +45,11 @@ rule metagenome_assembly:
         classified_reads="data/sequencing_files/{sample}_classified-reads.fastq.gz",
         unclassified_reads="data/sequencing_files/{sample}_unclassified-reads.fastq.gz"
     output:
-        assembly_folder=temp(directory("data/metagenome_assembly/{sample}"))
-    shell:
-        "megahit -r {input.classified_reads},{input.unclassified_reads} -m 0.5 -t 4 -o {output.assembly_folder}"
-
-
-rule summarise_assembly:
-    input:
-        assembly_folder="data/metagenome_assembly/{sample}",
-        assembly_stats_sample="data/metagenome_assembly/{sample}_final.contigs.lst"
-    output:
+        assembly_folder=temp(directory("data/metagenome_assembly/{sample}")),
         assembly="data/metagenome_assembly/{sample}_final.contigs.fasta.gz",
         assembly_stats_sample="data/metagenome_assembly/{sample}_final.contigs.lst"
     run:
+        shell("megahit -r {input.classified_reads},{input.unclassified_reads} -m 0.5 -t 4 -o {output.assembly_folder}")
         shell('grep ">" data/metagenome_assembly/{wildcards.sample}/final.contigs.fa | sed "s/>//" > {output.assembly_stats_sample}')
         shell("cp data/metagenome_assembly/{wildcards.sample}/final.contigs.fa data/metagenome_assembly/{wildcards.sample}_final.contigs.fasta")
         shell("gzip data/metagenome_assembly/{wildcards.sample}_final.contigs.fasta")
@@ -140,19 +132,19 @@ rule infer_class_labels:
         "scripts/infer_class_labels.R"
 
 
-rule get_quality_measures:
+rule get_quality_metrics:
     input:
         classified_reads="data/sequencing_files/{sample}_classified-reads.fastq.gz",
         unclassified_reads="data/sequencing_files/{sample}_unclassified-reads.fastq.gz",
-        unclassified_in_contig_reads_list="data/classification/{sample}_unclassified-in-contig_{threshold}.lst",
-        unclassified_not_in_contig_reads_list="data/classification/{sample}_unclassified-not-in-contig_{threshold}.lst"
+        unclassified_in_contig_reads_list=expand("data/classification/{{sample}}_unclassified-in-contig_{threshold}.lst", threshold=THRESHOLD),
+        unclassified_not_in_contig_reads_list=expand("data/classification/{{sample}}_unclassified-not-in-contig_{threshold}.lst", threshold=THRESHOLD)
     output:
-        classified_reads_quality="data/quality_measures/{sample}_classified-reads_{threshold}.json",
-        unclassified_reads_quality="data/quality_measures/{sample}_unclassified-reads_{threshold}.json",
-        unclassified_in_contig_reads="data/sequencing_files/{sample}_unclassified-in-contig_{threshold}.fastq.gz",
-        unclassified_in_contig_reads_quality="data/quality_measures/{sample}_unclassified-in-contig-reads_{threshold}.json",
-        unclassified_not_in_contig_reads="data/sequencing_files/{sample}_unclassified-not-in-contig_{threshold}.fastq.gz",
-        unclassified_not_in_contig_reads_quality="data/quality_measures/{sample}_unclassified-not-in-contig-reads_{threshold}.json"
+        classified_reads_quality="data/quality_metrics/{sample}_classified-reads.json",
+        unclassified_reads_quality="data/quality_metrics/{sample}_unclassified-reads.json",
+        unclassified_in_contig_reads="data/sequencing_files/{sample}_unclassified-in-contig.fastq.gz",
+        unclassified_in_contig_reads_quality="data/quality_metrics/{sample}_unclassified-in-contig-reads.json",
+        unclassified_not_in_contig_reads="data/sequencing_files/{sample}_unclassified-not-in-contig.fastq.gz",
+        unclassified_not_in_contig_reads_quality="data/quality_metrics/{sample}_unclassified-not-in-contig-reads.json"
     run:
         # get quality data of classified and unclassified reads
         shell("fastp -i {input.classified_reads} --overrepresentation_analysis --low_complexity_filter -j {output.classified_reads_quality} -h /dev/null")

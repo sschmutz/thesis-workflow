@@ -1,11 +1,4 @@
 .DS_Store
-sequencing_files/
 .snakemake/
-quality_measures/
-classification/
-virmet_dbs/
-virmet_output/
-metagenome_assembly/
-metagenome_assembly_read_mapping/
-undetermined_class_label/
+data/
 .Rproj.user

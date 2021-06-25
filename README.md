@@ -19,7 +19,7 @@ to produce files needed for thesis
 `snakemake --rulegraph | dot -Tsvg > dag.svg`
 
 simplified overview of all rules
-`snakemake --rulegraph "data/quality_measures/1000580287-AR-RNA_unclassified-not-in-contig-reads_1000580287-AR-RNA.json" | dot -Tsvg > dag.svg`
+`snakemake --rulegraph "data/quality_metrics/1000580287-AR-RNA_unclassified-not-in-contig-reads_5.json" | dot -Tsvg > dag.svg`
 
 simplified overview of all rules for the semi-supervised approach
 `snakemake --rulegraph "data/undetermined_class_label/1000580287-AR-RNA_5.csv" | dot -Tsvg > dag.svg`
@@ -82,4 +82,4 @@ Those sequencing read files are created with this rule and a json quality report
 There are different ways to execute parts or the whole snakemake workflow (see [Snakemake documentation](https://snakemake.readthedocs.io/en/stable/)).  
 Described here is an example to run the full workflow of one sample.
 
-`snakemake --cores 8 metagenome_assembly_read_mapping/{1000576042-AR-DNA,1000576042-AR-RNA,1000580287-AR-DNA,1000580287-AR-RNA}_aln.tsv.gz`
+`snakemake --cores 8`
