@@ -16,7 +16,7 @@ The virmet output itself has also to be prepared in a separate folder `data/virm
 
 ### Software required
 Listed below are all primary software tools (without dependencies) and their version which was used for the thesis. All could be installed (including required dependencies) via the package manager Conda.  
-A complete list can be found in the `environment.yml` document.
+A complete list can be found in the [`environment.yml`](environment.yml) document.
 
 Python v3.9.5, van Rossum (1995)  
 Snakemake v6.4.1, Mölder et al. (2021)  
