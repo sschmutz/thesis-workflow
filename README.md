@@ -55,7 +55,7 @@ The following output files are required to replicate the findings presented in t
 
 ### Get quality filtered sequences
 Since there is no one file containing all classified sequences among the VirMet output, it needs to be created first.  
-There are however files containing all raw sequences and all unclassified sequences respectively (prepared in section [Data Required](data-required)). It is therefore possible to get the classified sequences as follows:  
+There are however files containing all raw sequences and all unclassified sequences respectively (prepared in section [Data Required](#data-required)). It is therefore possible to get the classified sequences as follows:  
 
 raw sequences - sequences removed by qc - unclassified sequences = classified sequences  
 
@@ -100,7 +100,7 @@ snakemake --cores 4 data/classification/{sample}_viral.lst.gz
 ```
 
 ### Infer class labels
-Given a threshold value in percent as described in section [Setup](setup), the previously unclassified reads are put into classes.  
+Given a threshold value in percent as described in section [Setup](#setup), the previously unclassified reads are put into classes.  
 This happens using the R script `infer_class_labels.R` which uses the VirMet class labels and the contig information of each sequencing read (previous two rules) to infer class labels of previously unclassified reads.  
 The summary statistics are written to the `undetermined_class_label` folder and a list of sequencing reads for the two classes "unclassified_in_contig" and "unclassified_not_in_contig" are written to the `classification` folder.  
 
