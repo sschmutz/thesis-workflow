@@ -1,15 +1,18 @@
+# All samples which should be analysed have to be listed here. Alternatively they could
+# also be read from a file.
 SAMPLES = ["1000576042-AR-DNA", "1000576042-AR-RNA", "1000580287-AR-DNA", "1000580287-AR-RNA"]
+
+# The THRESHOLD variable defines the threshold (in percent) which is applied
+# to label the contigs using the rule "infer_class_labels"
 THRESHOLD = 5
+
 
 # a pseudo-rule which lists all files that should be created
 rule all:
     input:
-        unclassified_reads_quality=expand("data/quality_metrics/{sample}_unclassified-reads.json", sample=SAMPLES),
-        classified_reads_quality=expand("data/quality_metrics/{sample}_classified-reads.json", sample=SAMPLES),
-        unclassified_in_contig_reads_quality=expand("data/quality_metrics/{sample}_unclassified-in-contig-reads.json", sample=SAMPLES),
-        unclassified_not_in_contig_reads_quality=expand("data/quality_metrics/{sample}_unclassified-not-in-contig-reads.json", sample=SAMPLES),
-        undetermined_class_label=expand("data/undetermined_class_label/{sample}_{threshold}.csv", sample=SAMPLES, threshold=THRESHOLD),
-        assembly=expand("data/metagenome_assembly/{sample}_final.contigs.fasta.gz", sample=SAMPLES)
+        quality_profiling=expand("data/quality_metrics/{sample}_{type}.json", sample=SAMPLES, type=["classified-reads", "unclassified-reads", "unclassified-in-contig-reads", "unclassified-not-in-contig-reads"]),
+        assembly_stats_sample=expand("data/metagenome_assembly/{sample}_final.contigs.lst", sample=SAMPLES),
+        undetermined_class_label=expand("data/undetermined_class_label/{sample}_{threshold}.csv", sample=SAMPLES, threshold=THRESHOLD)
 
 
 rule get_quality_filtered_sequences:
@@ -49,8 +52,15 @@ rule metagenome_assembly:
         assembly="data/metagenome_assembly/{sample}_final.contigs.fasta.gz",
         assembly_stats_sample="data/metagenome_assembly/{sample}_final.contigs.lst"
     run:
+        # run megahit with the default parameter, specify memory (-m) and
+        # thread (-t) usage
         shell("megahit -r {input.classified_reads},{input.unclassified_reads} -m 0.5 -t 4 -o {output.assembly_folder}")
+
+        # get the sequence headers of the final.contigs which contain
+        # assembly statistics information (contig name, flag, multi and length)
         shell('grep ">" data/metagenome_assembly/{wildcards.sample}/final.contigs.fa | sed "s/>//" > {output.assembly_stats_sample}')
+
+        # move, rename and compress the final.contigs
         shell("cp data/metagenome_assembly/{wildcards.sample}/final.contigs.fa data/metagenome_assembly/{wildcards.sample}_final.contigs.fasta")
         shell("gzip data/metagenome_assembly/{wildcards.sample}_final.contigs.fasta")
 
