@@ -10,7 +10,7 @@ Edit the [`Snakefile`](Snakefile) by adding all names of the samples which shoul
 ### Data required
 *Note: The data is not part of this repository as it contains sensitive information.*  
 
-Prepare a folder within the cloned git repository named `data/sequencing_files/` which should containing the compressed raw- and unclassified sequencing files (`{sample}.fastq.gz` and `{sample}_unclassified-reads.fastq.gz`) for each sample which should be analysed. Creating a symbolic link instead of copying the files is also possible. Maintaining the same folder and filename structure suggested here allows that the [`Snakefile`](Snakefile) doesn't need to be adapted beyond specifying the sample names and threshold value.  
+Prepare a folder within the cloned git repository named `data/sequencing_files/` containing the compressed raw- and unclassified sequencing files (`{sample}.fastq.gz` and `{sample}_unclassified-reads.fastq.gz`) for each sample which should be analysed. Creating a symbolic link instead of copying the files is also possible. Maintaining the same folder and filename structure suggested here allows that the [`Snakefile`](Snakefile) doesn't need to be adapted beyond specifying the sample names and threshold value.  
 In another folder named `data/virmet_dbs` the fasta files of all database sequences which were used for VirMet need to be present.  
 The VirMet output itself has also to be prepared in a separate folder `data/virmet_output` where the results of each sample needs to be present in a subfolder named after the sample. Required are all cram files created during the decontamination steps of VirMet and `viral_reads.fastq.gz` which contains all sequencing reads which were assigned to a virus.
 
@@ -100,7 +100,7 @@ snakemake --cores 4 data/classification/{sample}_viral.lst.gz
 ```
 
 ### Infer class labels
-Given a threshold value in percent, as described in section [Setup](#setup) the contigs are first labeled (see example in figure below) before then the class labels of previously unclassified reads are inferred.  
+Given a threshold value in percent, as described in section [Setup](#setup), the contigs are first labeled (see example in figure below) before then the class labels of previously unclassified reads are inferred.  
 
 <img src="figures/contig-example-1.png" width="600">
 
