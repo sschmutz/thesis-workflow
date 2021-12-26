@@ -1,5 +1,5 @@
 # Characterizing undetermined sequences from metagenomic sequencing
-> Snakemake Workflow to replicate data generation for the Master's Thesis
+> Snakemake Workflow to replicate data generation for the [Master's Thesis](https://sschmutz.github.io/thesis/)
 
 ## Setup
 Get the contents of this repository by cloning it from GitHub:  
